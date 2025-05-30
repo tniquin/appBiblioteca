@@ -15,12 +15,11 @@ def post_livro(titulo, autor, isbn, resumo):
         print(f"ERRO: {reponse_post.status_code}")
         print(f"ERRO: {reponse_post.json()}")
 
-def post_user(nome, cpf, endereco, status):
+def post_user(nome, cpf, endereco):
     url = f"http://10.135.232.18:5000/cadastrar/usuario"
     newUser = {"nome": nome,
                 "cpf": cpf,
-                "endereco": endereco,
-                "status": status}
+                "endereco": endereco}
     reponse_post = requests.post(url, json=newUser)
     if reponse_post.status_code == 201:
         dados_post = reponse_post.json()

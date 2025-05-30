@@ -1,6 +1,8 @@
 import flet as ft
 import requests
 from flet import *
+from flet.core.border_radius import horizontal
+
 from api import get_livros, post_livro, get_users, post_user, get_emprestimos
 
 
@@ -9,13 +11,14 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.DARK
     page.window.width = 375
     page.window.height = 667
-    # page.navigation_bar = ft.NavigationBar(
-    #     destinations=[
-    #         ft.NavigationBarDestination(icon=Icons.BOOK, label="Livros"),
-    #         ft.NavigationBarDestination(icon=Icons.PERSON, label="Pessoas"),
-    #         ft.NavigationBarDestination(icon=Icons.EMAIL_SHARP, label="Emprestimos"),
-    #     ],
-    # )
+
+    page.navigation_bar = ft.NavigationBar(
+        destinations=[
+            ft.NavigationBarDestination(icon=Icons.BOOK, label="Livros"),
+            ft.NavigationBarDestination(icon=Icons.PERSON, label="Pessoas"),
+            ft.NavigationBarDestination(icon=Icons.EMAIL_SHARP, label="Emprestimos"),
+        ],
+    )
 
     pagelet = ft.Pagelet(
         navigation_bar=ft.NavigationBar(
@@ -27,8 +30,8 @@ def main(page: ft.Page):
             on_change=lambda e: page.go(
                 ["/", "/usuarios", "/emprestimos"][
                     e.control.selected_index])
-            ), content=ft.Container(),
-            height=500, expand=True)
+        ), content=ft.Container(),
+        height=500, expand=True)
 
     def listarLivros(e):
         lv.controls.clear()
@@ -45,12 +48,14 @@ def main(page: ft.Page):
                         items=[
                             ft.PopupMenuItem(text="Detalhes")
                         ],
-                        on_select=lambda _, lv=livro: exibirDetalhesLivro(lv['titulo'], lv['autor'], lv['isbn'], lv['resumo'])
+                        on_select=lambda _, lv=livro: exibirDetalhesLivro(lv["titulo"], lv["autor"], lv["isbn"],
+                                                                            lv["resumo"]),
                     )
                 )
             )
+
     def exibirDetalhesLivro(titulo, autor, isbn, resumo):
-        livro.value = (f"Titulo: \n {titulo};\n\nAutor: \n {autor};\n\nISBN: \n {isbn};\n\nResumo: \n {resumo}")
+        livro.value = (f"Titulo: \n {titulo};\n\nAutor: \n {autor};\n\nISBN: \n {isbn};\n\nResumo: \n {resumo};")
         page.update()
         page.go("/exibirDetalhesLivro")
 
@@ -93,12 +98,14 @@ def main(page: ft.Page):
                         items=[
                             ft.PopupMenuItem(text="Detalhes")
                         ],
-                        on_select=lambda _, u=user:  exibirDetalhesUser(u['nome'], u['cpf'], u['endereco'], u['status_user'])
+                        on_select=lambda _, u=user: exibirDetalhesUser(u['nome'], u['cpf'], u['endereco'],
+                                                                        u['status'])
                     )
                 )
             )
-    def exibirDetalhesUser(nome, cpf, endereco, status_user):
-        user.value = (f"Nome: \n{nome};\n\nCPF: \n{cpf};\n\nEndereço: \n{endereco};\n\nStatus: \n{status_user}")
+
+    def exibirDetalhesUser(nome, cpf, endereco, status):
+        user.value = (f"Nome: \n{nome};\n\nCPF: \n{cpf};\n\nEndereço: \n{endereco};\n\nStatus: \n{status}")
         page.update()
         page.go("/exibirDetalhesUser")
 
@@ -134,20 +141,23 @@ def main(page: ft.Page):
             lv.controls.append(
                 ft.ListTile(
                     leading=ft.Icon(ft.Icons.EMAIL),
-                    title=ft.Text(f'{emprestimo["usuario_id"]}'),
-                    subtitle=ft.Text(f'{emprestimo["livro_id"]}'),
+                    title=ft.Text(f'ID do Usuario: {emprestimo["usuario_id"]}'),
+                    subtitle=ft.Text(f'ID do livro: {emprestimo["livro_id"]}'),
                     trailing=ft.PopupMenuButton(
                         icon=ft.Icons.INFO,
                         items=[
                             ft.PopupMenuItem(text="Detalhes")
                         ],
-                        on_select=lambda _, e=emprestimo: exibirDetalhesEmprestimo(e['id'], e['usuario_id'], e['livro_id'], e['data_devolucao'], e['data_emprestimo'])
+                        on_select=lambda _, e=emprestimo: exibirDetalhesEmprestimo(e['id'], e['usuario_id'],
+                                                                                    e['livro_id'], e['data_devolucao'],
+                                                                                    e['data_emprestimo'], e['status'])
                     )
                 )
             )
 
-    def exibirDetalhesEmprestimo(id, id_usuario, id_livro, data_devolucao, data_emprestimo):
-        emprestimo.value = (f"ID: \n{id};\n\nID usuario: \n{id_usuario};\n\nID livro: \n{id_livro};\n\nData devolução: \n{data_devolucao};\n\nData emprestimo: \n{data_emprestimo}")
+    def exibirDetalhesEmprestimo(id, id_usuario, id_livro, data_devolucao, data_emprestimo, status):
+        emprestimo.value = (
+            f"ID: \n{id};\n\nID usuario: \n{id_usuario};\n\nID livro: \n{id_livro};\n\nData devolução: \n{data_devolucao};\n\nData emprestimo: \n{data_emprestimo};\n\nStatus: \n{status}")
         page.update()
         page.go("/exibirDetalhesEmprestimo")
 
@@ -178,57 +188,51 @@ def main(page: ft.Page):
     def gerencia_rotas(e):
         page.views.clear()
         page.views.append(
-                View(
-                    "/",
-                    [
-                            AppBar(title=Text("Biblioteca - Livros"), bgcolor=Colors.SECONDARY),
-                            ft.ResponsiveRow([
-                                ft.ElevatedButton(text="Pessoas", on_click=lambda e: page.go("/usuarios"), col=6),
-                                ft.ElevatedButton(text="Emprestimos", on_click=lambda e: page.go("/emprestimos"), col=6),
-                            ]),
-                            ft.ResponsiveRow([
-                                ft.ElevatedButton(
-                                    text="Listar Livros",
-                                    on_click=lambda e: page.go("/listarLivros"),
-                                ),
-                                ft.ElevatedButton(
-                                    text="Cadastrar Livros",
-                                    on_click=lambda e: page.go("/cadastrarLivros"),
-                                )
-                            ])
-
-                            ]
-                    )
-                        )
+            View(
+                "/",
+                [
+                    AppBar(title=Text("Biblioteca - Livros")),
+                    ft.ResponsiveRow([
+                        ft.ElevatedButton(
+                            text="Listar Livros",
+                            on_click=lambda e: page.go("/listarLivros"),
+                        ),
+                        ft.ElevatedButton(
+                            text="Cadastrar Livros",
+                            on_click=lambda e: page.go("/cadastrarLivros"),
+                        ),
+                    ]),
+                    pagelet
+                ]
+            )
+        )
         if page.route == "/listarLivros":
             listarLivros(e)
             page.views.append(
                 View(
                     "/listarLivros",
                     [
-                        AppBar(title=Text("Livros"), bgcolor=Colors.SECONDARY), ft.ElevatedButton(text="Voltar", width=page.window.width, on_click=lambda e: page.go("/")),
+                        AppBar(title=Text("Livros")),
                         lv,
                     ]
                 )
             )
-        page.update()
         if page.route == "/exibirDetalhesLivro":
             page.views.append(
                 View(
                     "/exibirDetalhesLivro",
                     [
-                        AppBar(title=Text("Detalhes do Livro"), bgcolor=Colors.SECONDARY), ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/listarLivros")),
+                        AppBar(title=Text("Detalhes do Livro")),
                         livro,
                     ]
                 )
             )
-
         if page.route == "/cadastrarLivros":
             page.views.append(
                 View(
                     "/cadastrarLivros",
                     [
-                        AppBar(title=Text("Cadastro de Livro"), bgcolor=Colors.SECONDARY),
+                        AppBar(title=Text("Cadastro de Livro")),
                         input_titulo,
                         input_autor,
                         input_isbn,
@@ -247,23 +251,16 @@ def main(page: ft.Page):
                             ]
                         ),
 
-
                     ],
                 )
             )
-
-
-
-
-        page.update()
-
         if page.route == "/usuarios":
-            page.views.clear()
             page.views.append(
-                    View(
-                        "/usuarios",
-                        [
-                            AppBar(title=Text("Usuarios"), bgcolor=Colors.SECONDARY),
+                View(
+                    "/usuarios",
+                    [
+                        AppBar(title=Text("Usuarios")),
+                        ft.ResponsiveRow([
                             ft.ElevatedButton(
                                 text="Listar Usuarios",
                                 on_click=lambda e: page.go("/listarUsuarios"),
@@ -272,9 +269,11 @@ def main(page: ft.Page):
                                 text="Cadastrar Usuarios",
                                 on_click=lambda e: page.go("/cadastrarUsuarios"),
                             ),
-                            pagelet
-                        ]
-                    )
+                        ]),
+                        pagelet
+
+                    ]
+                )
             )
         if page.route == "/listarUsuarios":
             listarUsuario(e)
@@ -282,7 +281,8 @@ def main(page: ft.Page):
                 View(
                     "/listarUsuarios",
                     [
-                        AppBar(title=Text("Listar usuarios"), bgcolor=Colors.SECONDARY), ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/usuarios")),
+                        AppBar(title=Text("Listar usuarios")),
+                        ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/usuarios")),
                         lv,
                     ]
                 )
@@ -292,7 +292,8 @@ def main(page: ft.Page):
                 View(
                     "/exibirDetalhesUsuarios",
                     [
-                        AppBar(title=Text("Detalhes do usuario:")), ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/listarUsuarios")),
+                        AppBar(title=Text("Detalhes do usuario:")),
+                        ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/listarUsuarios")),
                         user,
                     ]
                 )
@@ -302,13 +303,14 @@ def main(page: ft.Page):
                 View(
                     "/cadastrarUsuarios",
                     [
-                        AppBar(title=Text("Cadastrar usuario:")), ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/listarUsuarios")),
+                        AppBar(title=Text("Cadastrar usuario:")),
+                        ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/listarUsuarios")),
                         input_nome,
                         input_cpf,
                         input_endereco,
                         ft.ElevatedButton(
                             text="Salvar",
-                            on_click=lambda _: salvarUser(input_nome.value, input_cpf.value, input_endereco.value.value)
+                            on_click=lambda _: salvarUser(input_nome.value, input_cpf.value, input_endereco.value)
                         ),
                     ]
                 )
@@ -337,7 +339,8 @@ def main(page: ft.Page):
                 View(
                     "/listarEmprestimos",
                     [
-                        AppBar(title=Text("Listar Emprestimos:")), ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/emprestimos")),
+                        AppBar(title=Text("Listar Emprestimos:")),
+                        ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/emprestimos")),
                         lv,
                     ]
                 )
@@ -347,8 +350,10 @@ def main(page: ft.Page):
                 View(
                     "/exibirDetalhesEmprestimos",
                     [
-                        AppBar(title=Text("Detalhes do Emprestimo: ")), ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/listarEmprestimos")),
+                        AppBar(title=Text("Detalhes do Emprestimo: ")),
+                        ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/listarEmprestimos")),
                         emprestimo,
+
                     ]
                 )
             )
@@ -357,27 +362,23 @@ def main(page: ft.Page):
                 View(
                     "/cadastrarEmprestimosEmprestimos",
                     [
-                        AppBar(title=Text("Cadastrar Emprestimo: ")), ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/listarEmprestimos")),
+                        AppBar(title=Text("Cadastrar Emprestimo: ")),
                         input_devolucao,
                         input_emprestimo,
                         input_user,
                         input_cpf,
-                        ft.ElevatedButton(
-                            text="Salvar",
-                            on_click=lambda e: salvarEmprestimo(input_devolucao.value, input_emprestimo.value.value, input_livro.value, input_user.value)
+                        ft.ResponsiveRow([
+                            ft.ElevatedButton(
+                                text="Salvar",
+                                on_click=lambda e: salvarEmprestimo(input_devolucao.value, input_emprestimo.value.value,
+                                                                    input_livro.value, input_user.value)),
+                            ft.ElevatedButton(text="Voltar", on_click=lambda e: page.go("/listarEmprestimos")),
+                        ]
                         )
                     ]
                 )
             )
-    # def voltar(e):
-    #     page.views.pop()
-    #     top_view = page.views[-1]
-    #     page.go(top_view.route)
-    #
-    page.on_route_change = gerencia_rotas
-    #page.on_view_pop = voltar
-    page.go(page.route)
-
+        page.update()
 
     lv = ft.ListView(
         height=500,
@@ -389,12 +390,14 @@ def main(page: ft.Page):
     input_autor = ft.TextField(label="Autor: ")
     input_isbn = ft.TextField(label="ISBN: ")
     input_resumo = ft.TextField(label="Resumo: ")
+
     msg_error = ft.SnackBar(
         content=Text("")
     )
     msg_sucess = ft.SnackBar(
         content=Text("")
     )
+
     user = ft.Text("")
     input_nome = ft.TextField(label="Nome: ")
     input_cpf = ft.TextField(label="CPF: ")
@@ -405,5 +408,14 @@ def main(page: ft.Page):
     input_user = ft.TextField(label="ID do usuario: ")
     input_livro = ft.TextField(label="ID do livro: ")
 
+    def voltar(e):
+        page.views.pop()
+        top_view = page.views[-1]
+        page.go(top_view.route)
+
+    page.on_route_change = gerencia_rotas
+    page.on_view_pop = voltar
     page.go(page.route)
+
+
 ft.app(main)
